@@ -1,0 +1,13 @@
+vendor/
+.git
+test/
+stress_test/
+*~
+.*~
+.vscode/
+*.*~
+*.swp
+*.swo
+gin-bin
+.circleci/local_deploy.env
+log/
