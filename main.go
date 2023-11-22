@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"go-rest-currency-converter/controller"
 	"log"
 	"net/http"
 	"os"
@@ -13,10 +14,7 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
-		time.Sleep(5 * time.Second)
-		c.String(http.StatusOK, "Welcome Gin Server")
-	})
+	controller.Route(r.Group("/"))
 
 	srv := &http.Server{
 		Addr:    ":8080",
