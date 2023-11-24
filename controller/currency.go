@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go-rest-currency-converter/errors"
 	"go-rest-currency-converter/service"
 	"net/http"
 	"strconv"
@@ -49,28 +50,19 @@ func getCurrency(c *gin.Context) {
 	exReq := ExReq{}
 	err := c.ShouldBind(&exReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ExResp{
-			Msg:    err.Error(),
-			Amount: "0",
-		})
+		errors.Throw(c, err)
 		return
 	}
 
 	dto, err := exReq.parseAmount()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ExResp{
-			Msg:    err.Error(),
-			Amount: "0",
-		})
+		errors.Throw(c, err)
 		return
 	}
 
 	res, err := service.ConvertCurrency(*dto)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ExResp{
-			Msg:    err.Error(),
-			Amount: "0",
-		})
+		errors.Throw(c, err)
 		return
 	}
 
