@@ -16,6 +16,7 @@ func main() {
 
 	controller.Route(r.Group("/"))
 
+	// TODO: apply port number by config file
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r,
