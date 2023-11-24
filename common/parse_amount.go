@@ -1,4 +1,4 @@
-package commona
+package common
 
 import "strings"
 
