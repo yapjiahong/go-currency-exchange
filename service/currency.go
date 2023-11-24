@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/shopspring/decimal"
 	commona "go-rest-currency-converter/common"
 )
 
@@ -39,6 +40,11 @@ func ConvertCurrency(params CurrencyDTO) (string, error) {
 	}
 
 	result := params.Amount * rate
+	result, err := decimal.NewFromFloat(result).Round(2).Float64()
+	if err == true {
+		return "", fmt.Errorf("float Round error, input: %+v", result)
+	}
+
 	roundedResult := fmt.Sprintf("%.2f", result)
 	formattedResult := commona.FormatAmount(roundedResult)
 
