@@ -33,20 +33,33 @@ type CurrencyDTO struct {
 	Amount float64
 }
 
-func ConvertCurrency(params CurrencyDTO) (string, error) {
-	rate, ok := exchangeRates[params.From][params.To]
+func isSupportedCurrency(from, to Currency) (float64, error) {
+	rate, ok := exchangeRates[from][to]
 	if !ok {
-		return "", fmt.Errorf("unsupported currency conversion: %+v to %+v", params.From, params.To)
+		return 0, fmt.Errorf("unsupported currency conversion: %+v to %+v", from, to)
+	}
+
+	return rate, nil
+}
+
+func ConvertCurrency(params CurrencyDTO) (string, error) {
+	rate, err := isSupportedCurrency(params.From, params.To)
+	if err != nil {
+		return "", err
 	}
 
 	result := params.Amount * rate
-	result, err := decimal.NewFromFloat(result).Round(2).Float64()
-	if err == true {
-		return "", fmt.Errorf("float Round error, input: %+v", result)
+	if result > 0 {
+		roundedResult, goErr := decimal.NewFromFloat(result).Round(2).Float64()
+		if goErr == true {
+			return "", fmt.Errorf("float Round error, input: %+v", result)
+		}
+
+		result = roundedResult
 	}
 
-	roundedResult := fmt.Sprintf("%.2f", result)
-	formattedResult := commona.FormatAmount(roundedResult)
+	roundedResultString := fmt.Sprintf("%.2f", result)
+	formattedResult := commona.FormatAmount(roundedResultString)
 
 	return formattedResult, nil
 }
