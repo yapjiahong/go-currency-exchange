@@ -1,8 +1,12 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"go-rest-currency-converter/service"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type ExReq struct {
@@ -16,9 +20,23 @@ type ExResp struct {
 	Amount string `json:"amount"`
 }
 
+func (e ExReq) parseAmount() (*service.CurrencyDTO, error) {
+	amountStr := strings.ReplaceAll(e.Amount, "$", "")
+	amountStr = strings.ReplaceAll(amountStr, ",", "")
+	amount, err := strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid amount: %s", e.Amount)
+	}
+	return &service.CurrencyDTO{
+		From:   service.EnumConverter[e.Source],
+		To:     service.EnumConverter[e.Target],
+		Amount: amount,
+	}, nil
+}
+
 // getCurrency godoc
-// @Summary      Currency Exchange
-// @Description  Currency Exchange
+// @Summary      Currency ConvertCurrency
+// @Description  Currency ConvertCurrency
 // @Tags         Currency
 // @Accept       json
 // @Produce      json
@@ -32,7 +50,25 @@ func getCurrency(c *gin.Context) {
 	err := c.ShouldBind(&exReq)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ExResp{
-			Msg:    "failed",
+			Msg:    err.Error(),
+			Amount: "0",
+		})
+		return
+	}
+
+	dto, err := exReq.parseAmount()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ExResp{
+			Msg:    err.Error(),
+			Amount: "0",
+		})
+		return
+	}
+
+	res, err := service.ConvertCurrency(*dto)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ExResp{
+			Msg:    err.Error(),
 			Amount: "0",
 		})
 		return
@@ -40,6 +76,6 @@ func getCurrency(c *gin.Context) {
 
 	c.JSON(http.StatusOK, ExResp{
 		Msg:    "success",
-		Amount: "101",
+		Amount: res,
 	})
 }
